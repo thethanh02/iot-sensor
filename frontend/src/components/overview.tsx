@@ -49,7 +49,7 @@ const data = [
 ]
 
 export function Overview() {
-  const [opacity, setOpacity] = useState({
+  const [opacity, setOpacity] = useState<any>({
     temperature: 1,
     humidity: 1,
     lux: 1
