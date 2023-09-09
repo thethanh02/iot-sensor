@@ -16,7 +16,7 @@ function TimeNow() {
     }, [])
 
     return (
-        <div>
+        <div className='hidden sm:block'>
             {now}
         </div>
     );

@@ -1,11 +1,16 @@
 "use client"
 
+import { pubLedY } from '@/connections/mqtt'
 import '../styles/test.css'
 
 function LightBulb() {
+    const handleToggle = (e:any) => {
+        pubLedY(e.target.checked)
+    }
+
     return (
         <div className="switch large flex">
-            <input type="checkbox" name="toggle" />
+            <input type="checkbox" name="toggle" onChange={handleToggle} />
             <label htmlFor="toggle">
                 <i className="bulb">
                     <span className="bulbCenter"></span>

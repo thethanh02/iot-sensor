@@ -2,9 +2,9 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-const char* ssid = "";
-const char* password = "";
-const char* mqtt_server = "";
+// const char* ssid = "";
+// const char* password = "";
+// const char* mqtt_server = "";
 const uint16_t mqtt_port = 1884;
 
 const char* mqtt_sensor_topic = "esp/sensor";
@@ -60,7 +60,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   // memcpy(p, payload, length);
   // p[length] = NULL;
   // String message(p);
-  String message;
+  String message = "";
   for (int i = 0; i < length; i++) {
     message += (char)payload[i];  // Convert *byte to string
   }
@@ -152,7 +152,7 @@ void loop() {
 
     Serial.print("Publish message: ");
 
-    String stringJson = "{\"temperature\":" + String(temp, 4) + ",\"humidity\":" + String(hum, 4) + ",\"light\":" + String(ldrValue) + "}";
+    String stringJson = "{\"temperature\":" + String(temp, 2) + ",\"humidity\":" + String(hum, 2) + ",\"light\":" + String((float)ldrValue/10, 1) + "}";
 
     char buffer[256];
     stringJson.toCharArray(buffer, 256);

@@ -1,3 +1,5 @@
+'use client'
+
 import {
   Avatar,
   AvatarFallback,
@@ -14,15 +16,19 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useRouter } from "next/navigation"
 
 export function UserNav() {
+  const router = useRouter()
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/avatars/02.png" alt="@shadcn" />
-            <AvatarFallback>SC</AvatarFallback>
+            {/* <AvatarImage src="/avatars/02.png" alt="@shadcn" /> */}
+            <AvatarImage src="https://github.com/shadcn.png" alt="@thethanh02" />
+            <AvatarFallback>TT</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -38,13 +44,9 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('/profile')}>
             Profile
             <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            Settings
-            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         {/* <DropdownMenuSeparator />
