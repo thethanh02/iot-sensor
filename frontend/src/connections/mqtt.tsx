@@ -1,12 +1,12 @@
 "use client"
 
-import { useEffect, useState } from 'react';
+import * as React from "react"
 import io from "socket.io-client";
 
 export function getCurrentSensorVal() {
-    const [sensor, setSensor] = useState<any>({})
+    const [sensor, setSensor] = React.useState<any>({})
 
-    useEffect(() => {
+    React.useEffect(() => {
         const socket = io("http://localhost:5678")
 
         socket.on('esp/sensor', (data) => {
