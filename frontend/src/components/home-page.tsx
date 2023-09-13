@@ -10,12 +10,12 @@ import { Overview } from "@/components/overview"
 import LightBulb from "@/components/light-bulb-toggle"
 import Fan from "@/components/fan"
 import { DropletIcon, SunMediumIcon, ThermometerIcon } from "lucide-react"
-import { getCurrentSensorVal } from "@/connections/mqtt"
+import { useSensorData } from "@/connections/mqtt"
 import axios from "axios";
 import { useEffect, useState } from "react"
 
 export default function HomePage() {
-    const sensorVal = getCurrentSensorVal()
+    const sensorVal = useSensorData()
     const [dataChart, setDataChart] = useState<any>([])
     useEffect(() => {
         axios.get("http://localhost:5678/api/lastest_sensors")

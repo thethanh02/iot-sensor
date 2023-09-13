@@ -3,7 +3,7 @@
 import * as React from "react"
 import io from "socket.io-client";
 
-export function getCurrentSensorVal() {
+export function useSensorData() {
     const [sensor, setSensor] = React.useState<any>({})
 
     React.useEffect(() => {
