@@ -7,7 +7,7 @@ const e = require('cors');
 var mqtt = require('mqtt')
 var mysql = require('mysql2');
 var moment = require('moment');
-const { Console } = require('console');
+
 var con = mysql.createConnection({
     host: "localhost",
     port: 3306,
@@ -204,14 +204,14 @@ io.on('connection', (socket) => {
         });
 
     })
-    socket.on('esp/ledrgb', (message) => {
-        client.publish('esp/ledrgb', message);
+    socket.on('esp/fan', (message) => {
+        client.publish('esp/fan', message);
 
         var sql =
             `INSERT INTO 
             actions (time, name, action) 
             VALUES 
-            ("${getStringDateTime()}", "LedRGB", "${message}")`
+            ("${getStringDateTime()}", "Fan", "${message}")`
         con.query(sql, function (err, result) {
             if (err) throw err;
             console.log("Table inserted");
@@ -221,6 +221,13 @@ io.on('connection', (socket) => {
 
 // MQTT
 const client = mqtt.connect('mqtt://localhost:1884');
+// const client = mqtt.connect({
+//     protocol: '',
+//     host: '',
+//     port: 1884,
+//     username: '',
+//     password: ''
+// });
 
 client.on('connect', () => {
     console.log('MQTT connected');

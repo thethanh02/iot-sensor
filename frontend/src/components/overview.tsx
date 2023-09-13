@@ -1,38 +1,10 @@
 "use client"
 
-import { getSensorVal } from "@/connections/mqtt";
-import { use, useEffect, useState } from "react";
+import { useState } from "react";
 import { Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import moment from 'moment'
 
 export function Overview(data: any) {
-  // const [data, setData] = useState<any>([])
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     var newData = {
-  //       temperature: 0,
-  //       humidity: 0,
-  //       light: 0
-  //     }
-  //     newData.temperature = Number((Math.random() * (40.50 - 20.20) + 20.20).toFixed(2))
-  //     newData.humidity = Number((Math.random() * (90.50 - 70.02) + 70.02).toFixed(2))
-  //     newData.light = Number((Math.random() * (100 - 50) + 50).toFixed(0))
-
-  //     setData((preData: any) => {
-  //       if (preData.length > 10) {
-  //         preData.splice(0, 1)
-  //       }
-  //       console.log(newData)
-  //       return [...preData, newData]
-  //     });
-  //   }, 2000)
-
-  //   return () => {
-  //     clearInterval(interval)
-  //   }
-  // })
-
   const [opacity, setOpacity] = useState<any>({
     temperature: 1,
     humidity: 1,

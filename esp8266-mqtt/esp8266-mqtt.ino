@@ -15,12 +15,9 @@ DHT dht(DHTPIN, DHTTYPE);
 
 const char* mqtt_ledy_topic = "esp/ledy";
 #define LEDYPIN 5
-bool ledState = false;
 
-const char* mqtt_ledrgb_topic = "esp/ledrgb";
-#define REDPIN 4
-#define GREENPIN 0
-#define BLUEPIN 2
+const char* mqtt_fan_topic = "esp/fan";
+#define FANPIN 4
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -67,22 +64,16 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   Serial.print(message);
   if (String(topic) == String(mqtt_ledy_topic)) {
-    if (message == "on" && !ledState) {
-      digitalWrite(LEDYPIN, LOW);
-      ledState = !ledState;
-    } else if (message == "off" && ledState) {
-      digitalWrite(LEDYPIN, HIGH);
-      ledState = !ledState;
-    }
-  } else if (String(topic) == String(mqtt_ledrgb_topic)) {
     if (message == "on") {
-      digitalWrite(REDPIN, LOW);
-      digitalWrite(GREENPIN, HIGH);
-      digitalWrite(BLUEPIN, LOW);
+      digitalWrite(LEDYPIN, LOW);
     } else if (message == "off") {
-      digitalWrite(REDPIN, HIGH);
-      digitalWrite(GREENPIN, HIGH);
-      digitalWrite(BLUEPIN, HIGH);
+      digitalWrite(LEDYPIN, HIGH);
+    }
+  } else if (String(topic) == String(mqtt_fan_topic)) {
+    if (message == "on") {
+      digitalWrite(FANPIN, LOW);
+    } else if (message == "off") {
+      digitalWrite(FANPIN, HIGH);
     }
   }
   Serial.println();
@@ -98,7 +89,7 @@ void reconnect() {
     // Attempt to connect
     if (client.connect(clientId.c_str())) {
       client.subscribe(mqtt_ledy_topic);
-      client.subscribe(mqtt_ledrgb_topic);
+      client.subscribe(mqtt_fan_topic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -115,24 +106,21 @@ void setup() {
 
   pinMode(LDRPIN, INPUT);
   pinMode(LEDYPIN, OUTPUT);
-  pinMode(REDPIN, OUTPUT);
-  pinMode(GREENPIN, OUTPUT);
-  pinMode(BLUEPIN, OUTPUT);
+  pinMode(FANPIN, OUTPUT);
 
   digitalWrite(LEDYPIN, HIGH);
-  digitalWrite(REDPIN, HIGH);
-  digitalWrite(GREENPIN, HIGH);
-  digitalWrite(BLUEPIN, HIGH);
+  digitalWrite(FANPIN, HIGH);
 
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
 
   client.subscribe(mqtt_ledy_topic);
-  client.subscribe(mqtt_ledrgb_topic);
+  client.subscribe(mqtt_fan_topic);
 }
 
 float temp, hum;
 int ldrValue;
+int fakeVal1;
 
 void loop() {
 
@@ -149,10 +137,11 @@ void loop() {
     temp = dht.readTemperature();
     hum = dht.readHumidity();
     ldrValue = analogRead(LDRPIN);
+    fakeVal1 = random(10, 100);
 
     Serial.print("Publish message: ");
 
-    String stringJson = "{\"temperature\":" + String(temp, 2) + ",\"humidity\":" + String(hum, 2) + ",\"light\":" + String((float)ldrValue/10, 1) + "}";
+    String stringJson = "{\"temperature\":" + String(temp, 2) + ",\"humidity\":" + String(hum, 2) + ",\"light\":" + String((float)ldrValue/10, 1) + ",\"fakeVal1\":" + String(fakeVal1) + "}";
 
     char buffer[256];
     stringJson.toCharArray(buffer, 256);

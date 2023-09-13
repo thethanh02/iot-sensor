@@ -1,11 +1,11 @@
 "use client"
 
-import { pubLedRGB } from '@/connections/mqtt';
+import { pubFan } from '@/connections/mqtt';
 import '../styles/fan.css'
 
 function Fan() {
     const handleToggle = (e:any) => {
-        pubLedRGB(e.target.checked)
+        pubFan(e.target.checked)
     }
 
     return (
