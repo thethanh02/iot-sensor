@@ -49,17 +49,18 @@ export type Action = {
 export const columns: ColumnDef<Action>[] = [
     {
         accessorKey: "id",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                    Id
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-            )
-        },
+        // header: ({ column }) => {
+        //     return (
+        //         <Button
+        //             variant="ghost"
+        //             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        //         >
+        //             Id
+        //             <ArrowUpDown className="ml-2 h-4 w-4" />
+        //         </Button>
+        //     )
+        // },
+        header: "Id",
         cell: ({ row }) => (
             <div className="font-medium">{row.getValue("id")}</div>
         ),
@@ -91,6 +92,9 @@ interface TimeRange {
 }
 
 export function ActionTable() {
+    // Sort
+    const [dateSorted, setDateSorted] = React.useState(0)
+
     // Pagination handler
     const [currentPage, setCurrentPage] = React.useState(0)
     const [totalPages, setTotalPages] = React.useState(0)
@@ -108,14 +112,15 @@ export function ActionTable() {
                         time_to: time.to,
                         date_from: date.from,
                         date_to: date.to,
-                        page: currentPage + 1
+                        page: currentPage + 1,
+                        sorted: dateSorted
                     }
                 }).then(res => {
                     setData(res.data)
                     setCurrentPage(currentPage + 1)
                 }).catch(error => console.log(error))
             } else {
-                await axios.get(`http://localhost:5678/api/list_actions?page=${currentPage + 1}`
+                await axios.get(`http://localhost:5678/api/list_actions?page=${currentPage + 1}&sorted=${dateSorted}`
                 ).then(res => {
                     setData(res.data)
                     setCurrentPage(currentPage + 1)
@@ -132,14 +137,15 @@ export function ActionTable() {
                         time_to: time.to,
                         date_from: date.from,
                         date_to: date.to,
-                        page: currentPage - 1
+                        page: currentPage - 1,
+                        sorted: dateSorted
                     }
                 }).then(res => {
                     setData(res.data)
                     setCurrentPage(currentPage - 1)
                 }).catch(error => console.log(error))
             } else {
-                await axios.get(`http://localhost:5678/api/list_actions?page=${currentPage - 1}`
+                await axios.get(`http://localhost:5678/api/list_actions?page=${currentPage - 1}&sorted=${dateSorted}`
                 ).then(res => {
                     setData(res.data)
                     setCurrentPage(currentPage - 1)
@@ -156,20 +162,21 @@ export function ActionTable() {
                         time_to: time.to,
                         date_from: date.from,
                         date_to: date.to,
-                        page: totalPages
+                        page: totalPages,
+                        sorted: dateSorted
                     }
                 }).then(res => {
                     setData(res.data)
                     setCurrentPage(totalPages)
                 }).catch(error => console.log(error))
             } else {
-                await axios.get(`http://localhost:5678/api/list_actions?page=${totalPages}`
+                await axios.get(`http://localhost:5678/api/list_actions?page=${totalPages}&sorted=${dateSorted}`
                 ).then(res => {
                     setData(res.data)
                     setCurrentPage(totalPages)
                 }).catch(error => console.log(error))
             }
-        } 
+        }
     }
     const handleFirstPage = async () => {
         if (date && currentPage > 0) {
@@ -180,14 +187,15 @@ export function ActionTable() {
                         time_to: time.to,
                         date_from: date.from,
                         date_to: date.to,
-                        page: 0
+                        page: 0,
+                        sorted: dateSorted
                     }
                 }).then(res => {
                     setData(res.data)
                     setCurrentPage(0)
                 }).catch(error => console.log(error))
             } else {
-                await axios.get("http://localhost:5678/api/list_actions?page=0"
+                await axios.get(`http://localhost:5678/api/list_actions?page=0&sorted=${dateSorted}`
                 ).then(res => {
                     setData(res.data)
                     setCurrentPage(0)
@@ -199,7 +207,7 @@ export function ActionTable() {
     // Data
     const [data, setData] = React.useState<Action[]>([])
     React.useEffect(() => {
-        axios.get(`http://localhost:5678/api/list_actions?page=${currentPage}`)
+        axios.get(`http://localhost:5678/api/list_actions?page=${currentPage}&sorted=${dateSorted}`)
             .then(res => setData(res.data))
             .catch(error => console.log(error))
     }, [])
@@ -226,7 +234,7 @@ export function ActionTable() {
     // Date time handler
     const [date, setDate] = React.useState<DateRange | undefined>({
         from: addDays(new Date(), -30),
-        to: addDays(new Date(), 1),
+        to: undefined
     })
     const [time, setTime] = React.useState<TimeRange>({
         from: '00:00',
@@ -241,7 +249,8 @@ export function ActionTable() {
                     time_to: time.to,
                     date_from: date.from,
                     date_to: date.to,
-                    page: 0
+                    page: 0,
+                    sorted: dateSorted
                 }
             }).then(res => {
                 setData(res.data)
@@ -254,6 +263,7 @@ export function ActionTable() {
                     time_to: time.to,
                     date_from: date.from,
                     date_to: date.to,
+                    sorted: dateSorted
                 }
             }).then(res => {
                 setTotalPages(res.data)
@@ -267,12 +277,45 @@ export function ActionTable() {
         }
     }
 
+    const handleSortByDate = async () => {
+        if (date && date.from && date.to) {
+            await axios.get("http://localhost:5678/api/list_actions", {
+                params: {
+                    time_from: time.from,
+                    time_to: time.to,
+                    date_from: date.from,
+                    date_to: date.to,
+                    page: currentPage,
+                    sorted: 1 - dateSorted
+                }
+            }).then(res => {
+                setData(res.data)
+                setDateSorted(1 - dateSorted)
+            }).catch(error => console.log(error))
+        } else {
+            await axios.get("http://localhost:5678/api/list_actions", {
+                params: {
+                    page: currentPage,
+                    sorted: 1 - dateSorted
+                }
+            }).then(res => {
+                setData(res.data)
+                setDateSorted(1 - dateSorted)
+            }).catch(error => console.log(error))
+        }
+    }
+
     return (
         <>
             <div className="flex items-center py-4">
-            <CalendarDateRangePicker date={date} setDate={setDate} time={time} setTime={setTime} />
+                <CalendarDateRangePicker date={date} setDate={setDate} time={time} setTime={setTime} />
                 <Button variant="outline" size="icon" onClick={handleClickSearch}>
                     <Search className="h-4 w-4" />
+                </Button>
+                <div className="px-2" />
+                <Button className="w-120 px-2" variant="outline" size="icon" onClick={handleSortByDate}>
+                    Sort by date
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -352,7 +395,7 @@ export function ActionTable() {
                 </Table>
             </div>
             <div className="flex items-center justify-end space-x-2 py-4">
-            <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+                <div className="flex w-[100px] items-center justify-center text-sm font-medium">
                     Page {currentPage + 1} of{" "}
                     {totalPages + 1}
                 </div>

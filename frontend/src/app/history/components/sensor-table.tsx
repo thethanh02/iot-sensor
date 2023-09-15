@@ -44,6 +44,7 @@ export type Sensor = {
     light: number
     temperature: number
     humidity: number
+    gas: number
     time: string
 }
 
@@ -89,6 +90,13 @@ export const columns: ColumnDef<Sensor>[] = [
         header: "Light(Lx)",
         cell: ({ row }) => {
             return <div className="font-medium">{row.getValue("light")}</div>
+        },
+    },
+    {
+        accessorKey: "gas",
+        header: "Gas",
+        cell: ({ row }) => {
+            return <div className="font-medium">{row.getValue("gas")}</div>
         },
     }
 ]

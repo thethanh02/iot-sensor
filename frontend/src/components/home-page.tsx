@@ -10,9 +10,10 @@ import { Overview } from "@/components/overview"
 import LightBulb from "@/components/light-bulb-toggle"
 import Fan from "@/components/fan"
 import { DropletIcon, SunMediumIcon, ThermometerIcon } from "lucide-react"
-import { useSensorData } from "@/connections/mqtt"
+import { pubAirCon, pubLedY, useSensorData } from "@/connections/mqtt"
 import axios from "axios";
 import { useEffect, useState } from "react"
+import { OverviewGas } from "./overview-gas"
 
 export default function HomePage() {
     const sensorVal = useSensorData()
@@ -32,6 +33,14 @@ export default function HomePage() {
         });
     }, [sensorVal])
 
+    const handleBulbToggle = (e:any) => {
+        pubLedY(e.target.checked)
+    }
+
+    const handleAirConditioningToggle = (e:any) => {
+        pubAirCon(e.target.checked)
+    }
+
     return (
         <>
             <div className="flex-col flex">
@@ -39,7 +48,7 @@ export default function HomePage() {
                     <div className="flex items-center justify-between space-y-2">
                         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <Card>
                             <div className="grid sm:grid-cols-2">
                                 <div>
@@ -121,14 +130,51 @@ export default function HomePage() {
                                 </div>
                             </div>
                         </Card>
+                        <Card>
+                            <div className="grid sm:grid-cols-2">
+                                <div>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">
+                                            Gas
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{sensorVal.gas}</div>
+                                        {/* <p className="text-xs text-muted-foreground">
+                                            Hot
+                                        </p> */}
+                                    </CardContent>
+                                </div>
+                                <div>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle />
+                                        <ThermometerIcon className="h-4 w-4 text-muted-foreground hidden md:block" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="mb-1 text-base font-medium text-red-700 dark:text-red-500">Gas</div>
+                                        <div className="w-full bg-gray-200 rounded-full mb-4 dark:bg-gray-700">
+                                            <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-xs font-medium text-center p-0.5 leading-none rounded-full dark:bg-red-500" style={{ width: `${sensorVal.gas / 10}%` }}>{sensorVal.gas}</div>
+                                        </div>
+                                    </CardContent>
+                                </div>
+                            </div>
+                        </Card>
                     </div>
                     <div className="grid gap-4 grid-cols-1 lg:grid-cols-8">
-                        <Card className="col-span-6">
+                        <Card className="col-span-3">
                             <CardHeader>
-                                <CardTitle>Overview</CardTitle>
+                                <CardTitle>Dht Ldr</CardTitle>
                             </CardHeader>
                             <CardContent className="pl-2">
                                 <Overview data={dataChart}/>
+                            </CardContent>
+                        </Card>
+                        <Card className="col-span-3">
+                            <CardHeader>
+                                <CardTitle>Gas</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pl-2">
+                                <OverviewGas data={dataChart}/>
                             </CardContent>
                         </Card>
                         <Card className="col-span-6 lg:col-span-2">
@@ -136,9 +182,11 @@ export default function HomePage() {
                                 <CardTitle>Active</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <LightBulb />
+                                <LightBulb handleToggle={handleBulbToggle} />
                                 <div className="py-3" />
                                 <Fan />
+                                <div className="py-3" />
+                                <LightBulb handleToggle={handleAirConditioningToggle} />
                             </CardContent>
                         </Card>
                         {/* <Card className="col-span-4 lg:col-span-2">

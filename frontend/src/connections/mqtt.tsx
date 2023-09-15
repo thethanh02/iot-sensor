@@ -26,6 +26,11 @@ export const pubLedY = (inputState: boolean) => {
     socket.emit("esp/ledy", inputState ? "on" : "off")
 }
 
+export const pubAirCon = (inputState: boolean) => {
+    const socket = io("http://localhost:5678")
+    socket.emit("esp/aircon", inputState ? "on" : "off")
+}
+
 export const pubFan = (inputState: boolean) => {
     console.log(inputState)
     const socket = io("http://localhost:5678")

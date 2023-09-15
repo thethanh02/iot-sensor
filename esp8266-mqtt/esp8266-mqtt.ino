@@ -19,6 +19,9 @@ const char* mqtt_ledy_topic = "esp/ledy";
 const char* mqtt_fan_topic = "esp/fan";
 #define FANPIN 4
 
+const char* mqtt_aircon_topic = "esp/aircon";
+#define AIRPIN 13
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -75,6 +78,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
     } else if (message == "off") {
       digitalWrite(FANPIN, HIGH);
     }
+  } else if (String(topic) == String(mqtt_aircon_topic)) {
+    if (message == "on") {
+      digitalWrite(AIRPIN, HIGH);
+    } else if (message == "off") {
+      digitalWrite(AIRPIN, LOW);
+    }
   }
   Serial.println();
 }
@@ -90,6 +99,7 @@ void reconnect() {
     if (client.connect(clientId.c_str())) {
       client.subscribe(mqtt_ledy_topic);
       client.subscribe(mqtt_fan_topic);
+      client.subscribe(mqtt_aircon_topic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -107,6 +117,7 @@ void setup() {
   pinMode(LDRPIN, INPUT);
   pinMode(LEDYPIN, OUTPUT);
   pinMode(FANPIN, OUTPUT);
+  pinMode(AIRPIN, OUTPUT);
 
   digitalWrite(LEDYPIN, HIGH);
   digitalWrite(FANPIN, HIGH);
@@ -116,11 +127,12 @@ void setup() {
 
   client.subscribe(mqtt_ledy_topic);
   client.subscribe(mqtt_fan_topic);
+  client.subscribe(mqtt_aircon_topic);
 }
 
 float temp, hum;
 int ldrValue;
-int fakeVal1;
+int gas;
 
 void loop() {
 
@@ -137,11 +149,11 @@ void loop() {
     temp = dht.readTemperature();
     hum = dht.readHumidity();
     ldrValue = analogRead(LDRPIN);
-    fakeVal1 = random(10, 100);
+    gas = random(0, 1000);
 
     Serial.print("Publish message: ");
 
-    String stringJson = "{\"temperature\":" + String(temp, 2) + ",\"humidity\":" + String(hum, 2) + ",\"light\":" + String((float)ldrValue/10, 1) + ",\"fakeVal1\":" + String(fakeVal1) + "}";
+    String stringJson = "{\"temperature\":" + String(temp, 2) + ",\"humidity\":" + String(hum, 2) + ",\"light\":" + String((float)ldrValue/10, 1) + ",\"gas\":" + String(gas) + "}";
 
     char buffer[256];
     stringJson.toCharArray(buffer, 256);

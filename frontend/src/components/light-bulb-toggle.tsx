@@ -3,10 +3,11 @@
 import { pubLedY } from '@/connections/mqtt'
 import '../styles/test.css'
 
-function LightBulb() {
-    const handleToggle = (e:any) => {
-        pubLedY(e.target.checked)
-    }
+interface LightBulbProps {
+    handleToggle: (e:any) => void;
+}
+
+const LightBulb: React.FC<LightBulbProps> = ({ handleToggle }) => {
 
     return (
         <div className="switch large flex">

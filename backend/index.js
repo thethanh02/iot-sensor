@@ -37,7 +37,8 @@ con.connect((err) => {
             time datetime not null, 
             temperature float not null, 
             humidity float not null, 
-            light float not null)`
+            light float not null,
+            gas float not null)`
     con.query(sql1, (err) => {
         if (err) throw err;
         console.log("Table created");
@@ -162,8 +163,10 @@ app.get('/api/total_pages_actions', function (req, res) {
 app.get('/api/list_actions', function (req, res) {
     var params = req.query
     var varPerPage = 10
-    if (Object.keys(req.query).length <= 1) {
+    var varSort = (params.sorted == 1 ? 'desc' : 'asc')
+    if (Object.keys(req.query).length <= 2) {
         var sql = `SELECT * FROM actions 
+            order by time ${varSort}
             limit ${params.page ? varPerPage * (params.page) : 0}, ${varPerPage};`
 
         con.query(sql, function (err, result) {
@@ -176,6 +179,7 @@ app.get('/api/list_actions', function (req, res) {
 
         var sql = `SELECT * FROM actions 
             where time between '${datetime_from}' and '${datetime_to}'
+            order by time ${varSort}
             limit ${params.page ? varPerPage * (params.page) : 0}, ${varPerPage};`
 
         con.query(sql, function (err, result) {
@@ -200,7 +204,6 @@ io.on('connection', (socket) => {
             ("${getStringDateTime()}", "LedY", "${message}")`
         con.query(sql, function (err, result) {
             if (err) throw err;
-            console.log("Table inserted");
         });
 
     })
@@ -214,7 +217,19 @@ io.on('connection', (socket) => {
             ("${getStringDateTime()}", "Fan", "${message}")`
         con.query(sql, function (err, result) {
             if (err) throw err;
-            console.log("Table inserted");
+        });
+    })
+    socket.on('esp/aircon', (message) => {
+        client.publish('esp/aircon', message);
+
+        console.log(`esp/aircon: ${message}`);
+        var sql =
+            `INSERT INTO 
+            actions (time, name, action) 
+            VALUES 
+            ("${getStringDateTime()}", "Air Condition", "${message}")`
+        con.query(sql, function (err, result) {
+            if (err) throw err;
         });
     })
 })
@@ -246,12 +261,11 @@ client.on('message', (topic, message) => {
 
         var sql =
             `INSERT INTO 
-            sensors (time, temperature, humidity, light) 
+            sensors (time, temperature, humidity, light, gas) 
             VALUES 
-            ("${getStringDateTime()}", "${jsonData.temperature}", "${jsonData.humidity}", "${jsonData.light}")`
+            ("${getStringDateTime()}", "${jsonData.temperature}", "${jsonData.humidity}", "${jsonData.light}", "${jsonData.gas}")`
         con.query(sql, function (err, result) {
             if (err) throw err;
-            console.log("Table inserted");
         });
 
         io.emit(topic, newMess)
