@@ -117,7 +117,6 @@ void setup() {
   pinMode(LDRPIN, INPUT);
   pinMode(LEDYPIN, OUTPUT);
   pinMode(FANPIN, OUTPUT);
-  pinMode(AIRPIN, OUTPUT);
 
   digitalWrite(LEDYPIN, HIGH);
   digitalWrite(FANPIN, HIGH);
@@ -149,14 +148,16 @@ void loop() {
     temp = dht.readTemperature();
     hum = dht.readHumidity();
     ldrValue = analogRead(LDRPIN);
-    gas = random(0, 1000);
 
     Serial.print("Publish message: ");
 
-    String stringJson = "{\"temperature\":" + String(temp, 2) + ",\"humidity\":" + String(hum, 2) + ",\"light\":" + String((float)ldrValue/10, 1) + ",\"gas\":" + String(gas) + "}";
+    StaticJsonDocument<100> stringJson;
+    stringJson["temperature"] = String(temp, 2);
+    stringJson["humidity"] = String(hum, 2);
+    stringJson["light"] = String((float)ldrValue/10, 1);
 
     char buffer[256];
-    stringJson.toCharArray(buffer, 256);
+    serializeJson(stringJson, buffer);
     uint16_t packetIdPubSensor = client.publish(mqtt_sensor_topic, buffer);
     Serial.printf("Publishing on topic %s at QoS 1, packetId %i: ", mqtt_sensor_topic, packetIdPubSensor);
     Serial.printf(buffer);
