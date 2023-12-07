@@ -264,3 +264,5 @@ function getStringDateTime() {
     var result = n.getFullYear() + "-" + month + "-" + n.getDate() + " " + n.getHours() + ":" + n.getMinutes() + ":" + n.getSeconds();
     return result;
 }
+
+module.exports = app;
