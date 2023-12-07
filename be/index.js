@@ -50,7 +50,7 @@ con.connect((err) => {
         if (err) throw err;
     });
 });
-app.get('/', function (req, res) {
+app.get('/api', function (req, res) {
     res.json("test");
 })
 // ------------------ Api------------------ 
