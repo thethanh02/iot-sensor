@@ -1,0 +1,11 @@
+{
+  "buildCommand": "cd fe && yarn && yarn build",
+  "outputDirectory": "fe/dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/be/index.js"
+    }
+  ]
+}
