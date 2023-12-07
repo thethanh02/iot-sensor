@@ -50,7 +50,9 @@ con.connect((err) => {
         if (err) throw err;
     });
 });
-
+app.get('/', function (req, res) {
+    res.json("test");
+})
 // ------------------ Api------------------ 
 // Lấy 10 giá trị CẢM BIẾN gần nhất
 // Hay lấy giá trị CẢM BIẾN 10 lần cuối đo được
