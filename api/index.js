@@ -1,12 +1,16 @@
-var cors = require('cors'),
-    express = require('express'),
-    app = express(),
-    server = require('http').createServer(app)
+import express from 'express';
+import pg from 'pg';
+import moment from 'moment';
+import mqtt from 'mqtt';
+import http from 'http';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import dotenv from "dotenv";
 
-var bodyParser = require('body-parser');
-var mqtt = require('mqtt')
-var mysql = require('mysql2');
-var moment = require('moment');
+var app = express(),
+    server = http.createServer(app);
+
+dotenv.config();
 app.use(cors())
 app.use(bodyParser.json());
 
@@ -17,39 +21,32 @@ server.listen(port, function () {
 
 // ------------------ Initialize------------------ 
 // Kết nối CSDL
-var con = mysql.createConnection({
-    host: "localhost",
-    port: 3306,
-    user: "root",
-    password: "a123456",
-    database: "iot"
-});
-con.connect((err) => {
-    if (err) throw err;
-    console.log("Connected!");
+const { Pool } = pg;
+const con = new Pool({
+  connectionString: process.env.POSTGRES_URL + "?sslmode=require",
+})
+const connectToDB = async () => {
+  try {
+    await con.connect();
+    await con.query(`CREATE TABLE IF NOT EXISTS sensors(
+                      id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
+                      time timestamp not null, 
+                      temperature float not null, 
+                      humidity float not null, 
+                      light float not null,
+                      gas float not null);`)
+    await con.query(`CREATE TABLE IF NOT EXISTS actions(
+                      id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
+                      time timestamp not null, 
+                      name text not null,
+                      action text not null);`)
 
-    // Tạo các bảng trong CSDL
-    var sql1 =
-        `CREATE TABLE IF NOT EXISTS sensors(
-            id int(10) not null primary key auto_increment, 
-            time datetime not null, 
-            temperature float not null, 
-            humidity float not null, 
-            light float not null,
-            gas float not null)`
-    con.query(sql1, (err) => {
-        if (err) throw err;
-    });
-    var sql2 =
-        `CREATE TABLE IF NOT EXISTS actions(
-            id int(10) not null primary key auto_increment, 
-            time datetime not null, 
-            name text not null,
-            action text not null)`
-    con.query(sql2, (err) => {
-        if (err) throw err;
-    });
-});
+  } catch (err) {
+    console.log(err);
+  }
+};
+connectToDB();
+
 app.get('/api', function (req, res) {
     res.json("test");
 })
@@ -84,7 +81,7 @@ app.get('/api/total_pages_sensors', function (req, res) {
             if (err) throw err;
             num = result[0].NumberOfSensors
 
-            res.json(num === 0 ? 0 : Math.round(num/varPerPage) - 1)
+            res.json(num === 0 ? 0 : Math.round(num / varPerPage) - 1)
         });
     } else if (params.date_from && params.date_to) {
         var datetime_from = moment(params.date_from).format('yyyy-MM-DD')
@@ -97,7 +94,7 @@ app.get('/api/total_pages_sensors', function (req, res) {
             if (err) throw err;
             num = result[0].NumberOfSensors
 
-            res.json(num === 0 ? 0 : Math.round(num/varPerPage) - 1)
+            res.json(num === 0 ? 0 : Math.round(num / varPerPage) - 1)
         });
     } else {
         res.json(1)
@@ -120,7 +117,7 @@ app.get('/api/list_sensors', function (req, res) {
         });
     } else if (params.date_from && params.date_to) {
         var datetime_from = moment(params.date_from).format('yyyy-MM-DD')
-        var datetime_to = moment(params.date_to).format('yyyy-MM-DD') 
+        var datetime_to = moment(params.date_to).format('yyyy-MM-DD')
 
         var sql = `SELECT * FROM sensors 
             where time between '${datetime_from}' and '${datetime_to}'
@@ -147,7 +144,7 @@ app.get('/api/total_pages_actions', function (req, res) {
             if (err) throw err;
             num = result[0].NumberOfActions
 
-            res.json(num === 0 ? 0 : Math.round(num/varPerPage) - 1)
+            res.json(num === 0 ? 0 : Math.round(num / varPerPage) - 1)
         });
     } else if (params.date_from && params.date_to) {
         var datetime_from = moment(params.date_from).format('yyyy-MM-DD')
@@ -160,7 +157,7 @@ app.get('/api/total_pages_actions', function (req, res) {
             if (err) throw err;
             num = result[0].NumberOfActions
 
-            res.json(num === 0 ? 0 : Math.round(num/varPerPage) - 1)
+            res.json(num === 0 ? 0 : Math.round(num / varPerPage) - 1)
         });
     } else {
         res.json(1)
@@ -253,7 +250,7 @@ app.post('/api/action/save', function (req, res) {
         ("${getStringDateTime()}", "${myAction.name}", "${myAction.action}")`
     con.query(sql, function (err, result) {
         if (err) throw err;
-        res.json({message: 'Ok'});
+        res.json({ message: 'Ok' });
     });
 })
 
@@ -265,4 +262,4 @@ function getStringDateTime() {
     return result;
 }
 
-module.exports = app;
+export default app;
