@@ -16,8 +16,9 @@ import {
 import React from "react";
 import axios from "axios";
 import moment from "moment";
+import { Api } from '../../Api';
 
-const ActionLogs = () => {
+const SensorLogs = () => {
   // Sort
   const [dateSorted, setDateSorted] = React.useState(1)
 
@@ -27,7 +28,7 @@ const ActionLogs = () => {
 
   // Lấy tổng số trang
   React.useEffect(() => {
-    axios.get("http://localhost:5678/api/total_pages_actions")
+    Api.getTotalPagesSensors(date)
       .then(res => setTotalPages(res.data))
       .catch(err => console.log(err))
   }, [])
@@ -35,94 +36,38 @@ const ActionLogs = () => {
   // Các hàm để sang trang
   const handleNextPage = async () => {
     if (date && currentPage < totalPages) {
-      if (date.from && date.to) {
-        await axios.get("http://localhost:5678/api/list_actions", {
-          params: {
-            date_from: date.from,
-            date_to: date.to,
-            page: currentPage + 1,
-            sorted: dateSorted
-          }
-        }).then(res => {
+      await Api.getSensors(date, currentPage + 1, dateSorted)
+        .then(res => {
           setData(res.data)
           setCurrentPage(currentPage + 1)
         }).catch(error => console.log(error))
-      } else {
-        await axios.get(`http://localhost:5678/api/list_actions?page=${currentPage + 1}&sorted=${dateSorted}`
-        ).then(res => {
-          setData(res.data)
-          setCurrentPage(currentPage + 1)
-        }).catch(error => console.log(error))
-      }
     }
   }
   const handlePrevPage = async () => {
     if (date && currentPage > 0) {
-      if (date.from && date.to) {
-        await axios.get("http://localhost:5678/api/list_actions", {
-          params: {
-            date_from: date.from,
-            date_to: date.to,
-            page: currentPage - 1,
-            sorted: dateSorted
-          }
-        }).then(res => {
+      await Api.getSensors(date, currentPage - 1, dateSorted)
+        .then(res => {
           setData(res.data)
           setCurrentPage(currentPage - 1)
         }).catch(error => console.log(error))
-      } else {
-        await axios.get(`http://localhost:5678/api/list_actions?page=${currentPage - 1}&sorted=${dateSorted}`
-        ).then(res => {
-          setData(res.data)
-          setCurrentPage(currentPage - 1)
-        }).catch(error => console.log(error))
-      }
     }
   }
   const handleLastPage = async () => {
     if (date && currentPage < totalPages) {
-      if (date.from && date.to) {
-        await axios.get("http://localhost:5678/api/list_actions", {
-          params: {
-            date_from: date.from,
-            date_to: date.to,
-            page: totalPages,
-            sorted: dateSorted
-          }
-        }).then(res => {
+      await Api.getSensors(date, totalPages, dateSorted)
+        .then(res => {
           setData(res.data)
           setCurrentPage(totalPages)
         }).catch(error => console.log(error))
-      } else {
-        await axios.get(`http://localhost:5678/api/list_actions?page=${totalPages}&sorted=${dateSorted}`
-        ).then(res => {
-          setData(res.data)
-          setCurrentPage(totalPages)
-        }).catch(error => console.log(error))
-      }
     }
   }
   const handleFirstPage = async () => {
     if (date && currentPage > 0) {
-      if (date.from && date.to) {
-        await axios.get("http://localhost:5678/api/list_actions", {
-          params: {
-            date_from: date.from,
-            date_to: date.to,
-            page: 0,
-            sorted: dateSorted
-          }
-        }).then(res => {
+      await Api.getSensors(date, 0, dateSorted)
+        .then(res => {
           setData(res.data)
           setCurrentPage(0)
         }).catch(error => console.log(error))
-      } else {
-        await axios.get(`http://localhost:5678/api/list_actions?page=0&sorted=${dateSorted}`
-        ).then(res => {
-          setData(res.data)
-          setCurrentPage(0)
-        }).catch(error => console.log(error))
-      }
     }
   }
 
@@ -136,7 +81,7 @@ const ActionLogs = () => {
   // Lấy data
   // Khi vừa vào page lần đầu thì sẽ lấy data ở trang 1 và sắp xếp từ ngày gần nhất đến xa nhất
   React.useEffect(() => {
-    axios.get(`http://localhost:5678/api/list_actions?page=${currentPage}&sorted=${dateSorted}`)
+    Api.getSensors(date, currentPage, dateSorted)
       .then(res => setData(res.data))
       .catch(error => console.log(error))
   }, [])
@@ -145,28 +90,17 @@ const ActionLogs = () => {
   const handleClickSearch = async () => {
     // Kiểm tra nếu có khoảng thời gian được chọn thì lấy data
     if (date && date.from && date.to) {
-      await axios.get("http://localhost:5678/api/list_actions", {
-        params: {
-          date_from: date.from,
-          date_to: date.to,
-          page: 0,
-          sorted: dateSorted
-        }
-      }).then(res => {
-        setData(res.data)
-        setCurrentPage(0)
-      }).catch(error => console.log(error))
-
-      await axios.get("http://localhost:5678/api/total_pages_actions", {
-        params: {
-          date_from: date.from,
-          date_to: date.to,
-          sorted: dateSorted
-        }
-      }).then(res => {
-        setTotalPages(res.data)
-      }).catch(error => console.log(error))
-    } else { 
+      await Api.getSensors(date, 0, dateSorted)
+        .then(res => {
+          setData(res.data)
+          setCurrentPage(0)
+        }).catch(error => console.log(error))
+      
+      await Api.getTotalPagesSensors(date)
+        .then(res => {
+          setTotalPages(res.data)
+        }).catch(error => console.log(error))
+    } else {
       // Nếu thiếu 1 trong 2 ngày bắt đầu hoặc ngày kết thúc thì báo lỗi
       window.alert("Please pick 2 dates");
     }
@@ -174,34 +108,16 @@ const ActionLogs = () => {
 
   // Sắp xếp data theo ngày
   const handleSortByDate = async () => {
-    if (date && date.from && date.to) {
-      await axios.get("http://localhost:5678/api/list_actions", {
-        params: {
-          date_from: date.from,
-          date_to: date.to,
-          page: currentPage,
-          sorted: 1 - dateSorted
-        }
-      }).then(res => {
-        setData(res.data)
-        setDateSorted(1 - dateSorted)
-      }).catch(error => console.log(error))
-    } else {
-      await axios.get("http://localhost:5678/api/list_actions", {
-        params: {
-          page: currentPage,
-          sorted: 1 - dateSorted
-        }
-      }).then(res => {
-        setData(res.data)
-        setDateSorted(1 - dateSorted)
-      }).catch(error => console.log(error))
-    }
+    await Api.getSensors(date, 0, 1 - dateSorted)
+    .then(res => {
+      setData(res.data)
+      setDateSorted(1 - dateSorted)
+    }).catch(error => console.log(error))
   }
   return (
     <div className="h-full w-full bg-gray-50 px-3 py-5 xl:px-16 xl:py-12">
       <header className="ie-as-header flex w-full justify-between">
-        <h3 className="text-xl font-semibold text-gray-900">All Action Logs</h3>
+        <h3 className="text-xl font-semibold text-gray-900">All Sensor Logs</h3>
       </header>
       <div className="ie-as-content mt-5">
         <Card>
@@ -212,18 +128,19 @@ const ActionLogs = () => {
               value={date}
               onValueChange={setDate}
             />
-            <Button size="xs" variant="secondary" icon={MagnifyingGlassIcon} onClick={handleClickSearch}>Search</Button>
+            <Button size="xs" variant="secondary" icon={MagnifyingGlassIcon} onClick={handleClickSearch}> Search </Button>
           </Flex>
           {/* Table hiện dữ liệu của bảng Actions */}
           <Table className="mt-6">
             <TableHead>
               <TableRow>
                 <TableHeaderCell>ID</TableHeaderCell>
-                <TableHeaderCell>Name</TableHeaderCell>
-                <TableHeaderCell>Action</TableHeaderCell>
+                <TableHeaderCell>Temperature</TableHeaderCell>
+                <TableHeaderCell>Humidity</TableHeaderCell>
+                <TableHeaderCell>Light</TableHeaderCell>
                 <TableHeaderCell>
                   <Button variant="light" color='stone' icon={ChevronUpDownIcon} iconPosition="right" onClick={handleSortByDate}>
-                    Date
+                    Created At
                   </Button>
                 </TableHeaderCell>
               </TableRow>
@@ -235,8 +152,9 @@ const ActionLogs = () => {
                   <TableCell>
                     <Badge size="xs" color="sky">{item.id}</Badge>
                   </TableCell>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.action}</TableCell>
+                  <TableCell>{item.temperature}</TableCell>
+                  <TableCell>{item.humidity}</TableCell>
+                  <TableCell>{item.light}</TableCell>
                   <TableCell>{moment(item.time).format('DD/MM/YY HH:mm:ss')}</TableCell>
                 </TableRow>
               ))}
@@ -263,4 +181,4 @@ const ActionLogs = () => {
   );
 };
 
-export default ActionLogs;
+export default SensorLogs;

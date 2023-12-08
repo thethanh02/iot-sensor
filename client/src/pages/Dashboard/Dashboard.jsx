@@ -12,6 +12,7 @@ import {
 import React from "react";
 import { BsLightbulbFill, BsLightbulbOffFill, BsLightbulb } from 'react-icons/bs';
 import axios from 'axios'
+import { Api } from '../../Api';
 
 function Dashboard() {
   const [valueChart, setValueChart] = React.useState(null);
@@ -35,7 +36,7 @@ function Dashboard() {
 
   React.useEffect(() => {
     const interval = setInterval(() => {
-      axios.get("http://localhost:5678/api/lastest_sensors")
+      Api.get10SensorsLastest()
         .then(res => {
           setDataChart(res.data);
           setKpiData([
@@ -63,7 +64,7 @@ function Dashboard() {
       name: 'LedY',
       action: e == true ? 'on' : 'off'
     }
-    await axios.post("http://localhost:5678/api/action/save", myAction)
+    await Api.saveAction(myAction)
       .catch(error => console.log(error))
   }
   async function handleSwitchLight2On(e) {
@@ -72,7 +73,7 @@ function Dashboard() {
       name: 'LedR',
       action: e == true ? 'on' : 'off'
     }
-    await axios.post("http://localhost:5678/api/action/save", myAction)
+    await Api.saveAction(myAction)
       .catch(error => console.log(error))
   }
   return (

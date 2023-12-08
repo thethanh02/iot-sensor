@@ -55,16 +55,16 @@ app.get('/api', function (req, res) {
 // Hay lấy giá trị CẢM BIẾN 10 lần cuối đo được
 app.get('/api/lastest_sensors', function (req, res) {
     var num = 0
-    var sql1 = `SELECT COUNT(id) AS NumberOfSensors FROM sensors`
+    var sql1 = `SELECT COUNT(id) AS numberofsensors FROM sensors`
     con.query(sql1, function (err, result) {
         if (err) throw err;
-        num = result[0].NumberOfSensors
+        num = result.rows[0].numberofsensors
 
         num = num >= 10 ? num - 10 : num
-        var sql = `SELECT * FROM sensors LIMIT ${num}, 10`
+        var sql = `SELECT * FROM sensors LIMIT 10 OFFSET ${num}`
         con.query(sql, function (err, result) {
             if (err) throw err;
-            res.json(result)
+            res.json(result.rows)
         });
     });
 })
@@ -76,25 +76,25 @@ app.get('/api/total_pages_sensors', function (req, res) {
     var varPerPage = 20
     if (Object.keys(req.query).length === 0) {
         var num = 0
-        var sql1 = `SELECT COUNT(id) AS NumberOfSensors FROM sensors`
+        var sql1 = `SELECT COUNT(id) AS numberofsensors FROM sensors`
         con.query(sql1, function (err, result) {
             if (err) throw err;
-            num = result[0].NumberOfSensors
+            num = result.rows[0].numberofsensors
 
-            res.json(num === 0 ? 0 : Math.round(num / varPerPage) - 1)
+            res.json(Math.ceil(num / varPerPage) - 1)
         });
     } else if (params.date_from && params.date_to) {
         var datetime_from = moment(params.date_from).format('yyyy-MM-DD')
         var datetime_to = moment(params.date_to).format('yyyy-MM-DD')
 
-        var sql = `SELECT COUNT(id) AS NumberOfSensors FROM sensors
+        var sql = `SELECT COUNT(id) AS numberofsensors FROM sensors
             where time between '${datetime_from}' and '${datetime_to}'`
 
         con.query(sql, function (err, result) {
             if (err) throw err;
-            num = result[0].NumberOfSensors
+            num = result.rows[0].numberofsensors
 
-            res.json(num === 0 ? 0 : Math.round(num / varPerPage) - 1)
+            res.json(Math.ceil(num / varPerPage) - 1)
         });
     } else {
         res.json(1)
@@ -109,11 +109,11 @@ app.get('/api/list_sensors', function (req, res) {
     if (Object.keys(req.query).length <= 2) {
         var sql = `SELECT * FROM sensors 
             order by time ${varSort}
-            limit ${params.page ? varPerPage * (params.page) : 0}, ${varPerPage};`
+            limit ${varPerPage} offset ${params.page ? varPerPage * (params.page) : 0};`
 
         con.query(sql, function (err, result) {
             if (err) throw err;
-            res.json(result)
+            res.json(result.rows)
         });
     } else if (params.date_from && params.date_to) {
         var datetime_from = moment(params.date_from).format('yyyy-MM-DD')
@@ -122,11 +122,11 @@ app.get('/api/list_sensors', function (req, res) {
         var sql = `SELECT * FROM sensors 
             where time between '${datetime_from}' and '${datetime_to}'
             order by time ${varSort}
-            limit ${params.page ? varPerPage * (params.page) : 0}, ${varPerPage};`
+            limit ${varPerPage} offset ${params.page ? varPerPage * (params.page) : 0};`
 
         con.query(sql, function (err, result) {
             if (err) throw err;
-            res.json(result)
+            res.json(result.rows)
         });
     } else {
         res.json(1)
@@ -142,9 +142,9 @@ app.get('/api/total_pages_actions', function (req, res) {
         var sql1 = `SELECT COUNT(id) AS NumberOfActions FROM actions`
         con.query(sql1, function (err, result) {
             if (err) throw err;
-            num = result[0].NumberOfActions
+            num = result.rows[0].numberofactions
 
-            res.json(num === 0 ? 0 : Math.round(num / varPerPage) - 1)
+            res.json(Math.ceil(num / varPerPage) - 1)
         });
     } else if (params.date_from && params.date_to) {
         var datetime_from = moment(params.date_from).format('yyyy-MM-DD')
@@ -155,9 +155,9 @@ app.get('/api/total_pages_actions', function (req, res) {
 
         con.query(sql, function (err, result) {
             if (err) throw err;
-            num = result[0].NumberOfActions
+            num = result.rows[0].numberofactions
 
-            res.json(num === 0 ? 0 : Math.round(num / varPerPage) - 1)
+            res.json(Math.ceil(num / varPerPage) - 1)
         });
     } else {
         res.json(1)
@@ -172,11 +172,11 @@ app.get('/api/list_actions', function (req, res) {
     if (Object.keys(req.query).length <= 2) {
         var sql = `SELECT * FROM actions 
             order by time ${varSort}
-            limit ${params.page ? varPerPage * (params.page) : 0}, ${varPerPage};`
+            limit ${varPerPage} offset ${params.page ? varPerPage * (params.page) : 0};`
 
         con.query(sql, function (err, result) {
             if (err) throw err;
-            res.json(result)
+            res.json(result.rows)
         });
     } else if (params.date_from && params.date_to) {
         var datetime_from = moment(params.date_from).format('yyyy-MM-DD')
@@ -185,11 +185,11 @@ app.get('/api/list_actions', function (req, res) {
         var sql = `SELECT * FROM actions 
             where time between '${datetime_from}' and '${datetime_to}'
             order by time ${varSort}
-            limit ${params.page ? varPerPage * (params.page) : 0}, ${varPerPage};`
+            limit ${varPerPage} offset ${params.page ? varPerPage * (params.page) : 0};`
 
         con.query(sql, function (err, result) {
             if (err) throw err;
-            res.json(result)
+            res.json(result.rows)
         });
     } else {
 
@@ -241,13 +241,13 @@ client.subscribe('esp/sensor');
 
 // Lưu HÀNH ĐỘNG BẤM NÚT vào CSDL
 app.post('/api/action/save', function (req, res) {
-    myAction = req.body;
+    var myAction = req.body;
     client.publish(`esp/${myAction.name.toLowerCase()}`, myAction.message);
     var sql =
         `INSERT INTO 
         actions (time, name, action) 
         VALUES 
-        ("${getStringDateTime()}", "${myAction.name}", "${myAction.action}")`
+        ('${getStringDateTime()}', '${myAction.name}', '${myAction.action}')`
     con.query(sql, function (err, result) {
         if (err) throw err;
         res.json({ message: 'Ok' });
