@@ -50,6 +50,9 @@ connectToDB();
 app.get('/api', function (req, res) {
     res.json({"test": "test"});
 })
+app.get('/api/health', function (req, res) {
+    res.json({"message": "health check"});
+})
 // ------------------ Api------------------ 
 // Lấy 10 giá trị CẢM BIẾN gần nhất
 // Hay lấy giá trị CẢM BIẾN 10 lần cuối đo được
