@@ -48,7 +48,7 @@ const connectToDB = async () => {
 connectToDB();
 
 app.get('/api', function (req, res) {
-    res.json("test");
+    res.json({"test": "test"});
 })
 // ------------------ Api------------------ 
 // Lấy 10 giá trị CẢM BIẾN gần nhất
